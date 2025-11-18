@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tablero de Control | Pietro</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+  <header class="bg-white shadow-sm">
+    <div class="w-full px-3 py-4 sm:px-4 lg:px-6 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900">
+        <span class="text-moss-500">Pietro</span>
+      </h1>
+      <div class="flex items-center gap-3 min-w-[260px] justify-end">
+        <a href="/index.html" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Inicio</a>
+        <a href="/Clientes" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Clientes</a>
+        <a href="/Difusiones" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Difusiones</a>
+        <a href="/tablero" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Tabla de control</a>
+        <a href="/churn-view" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Churn</a>
+        <button id="logout-btn" class="flex items-center text-gray-600 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 px-2 py-1 rounded">
+          <i data-feather="log-out" class="mr-2 w-4 h-4"></i>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">Tablero de Control</h1>
+      <a href="/churn-view" class="px-3 py-2 rounded bg-moss-500 hover:bg-moss-600 text-white text-sm flex items-center">
+        <i data-feather="activity" class="w-4 h-4 mr-1"></i>
+        Ver Churn
+      </a>
+    </div>
+
+    <!-- Variables de control -->
+    <section class="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-300">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Variables de control</h2>
+      <div id="ctrl-error" class="hidden mb-3 px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded"></div>
+      <form id="ctrl-form" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Coeficiente regular</label>
+          <input id="coeficiente_regular" type="number" step="0.1" class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Días nuevos</label>
+          <input id="dias_nuevos" type="number" class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Pedidos para activo frecuente</label>
+          <input id="pedidos_activo_frecuente" type="number" class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Pedidos para nuevo</label>
+          <input id="pedidos_nuevo" type="number" class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-1">Pedidos para VIP</label>
+          <input id="pedidos_vip" type="number" class="w-full p-2 border border-gray-300 rounded" />
+        </div>
+      </form>
+      <div class="mt-4 flex justify-end">
+        <button id="save-ctrl" class="px-4 py-2 rounded bg-moss-500 hover:bg-moss-600 text-white text-sm flex items-center">
+          <i data-feather="save" class="w-4 h-4 mr-1"></i>
+          Guardar cambios
+        </button>
+      </div>
+    </section>
+
+    <!-- Tabla guía de frecuencias -->
+    <section class="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-300 max-w-md">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold text-gray-900">Tabla guía de frecuencias</h2>
+        <p class="text-xs text-gray-500">Se usa para calcular Frecuencia * Coeficiente en el churn.</p>
+      </div>
+      <div id="freq-error" class="hidden mb-3 px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded"></div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead>
+            <tr class="bg-moss-500 text-white">
+              <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider">Frecuencia</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wider">Frecuencia * Coeficiente</th>
+            </tr>
+          </thead>
+          <tbody id="freq-body" class="bg-white divide-y divide-gray-200 text-sm">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tabla guía de Clasificación CHURN (solo lectura) -->
+    <section class="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-300">
+      <h2 class="text-lg font-semibold text-gray-900 mb-3">Clasificación CHURN (guía)</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+          <thead>
+            <tr class="bg-moss-500 text-white">
+              <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Concepto</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Descripción</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Cantidad de compras</th>
+              <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Frecuencia de compra</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td class="px-3 py-2 text-sm font-semibold">1.1</td>
+              <td class="px-3 py-2 text-sm">Clientes fidelizados</td>
+              <td class="px-3 py-2 text-sm">Pedidos para VIP</td>
+              <td class="px-3 py-2 text-sm">Días desde la última compra &lt; Coeficiente regular * Frecuencia de compra</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 text-sm font-semibold">1.2</td>
+              <td class="px-3 py-2 text-sm">Clientes a fidelizar</td>
+              <td class="px-3 py-2 text-sm">2 o 4 (pedidos para activo frecuente)</td>
+              <td class="px-3 py-2 text-sm">Días desde la última compra &lt; Coeficiente regular * Frecuencia de compra</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 text-sm font-semibold">2.1</td>
+              <td class="px-3 py-2 text-sm">Clientes fidelizados perdidos</td>
+              <td class="px-3 py-2 text-sm">2 o + (número fijo)</td>
+              <td class="px-3 py-2 text-sm">Días desde la última compra &gt; Coeficiente regular * Frecuencia de compra</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 text-sm font-semibold">2.2</td>
+              <td class="px-3 py-2 text-sm">Clientes no fidelizados perdidos</td>
+              <td class="px-3 py-2 text-sm">1</td>
+              <td class="px-3 py-2 text-sm">Días desde la última compra &gt; "Días nuevos"</td>
+            </tr>
+            <tr>
+              <td class="px-3 py-2 text-sm font-semibold">4.1</td>
+              <td class="px-3 py-2 text-sm">Clientes nuevos</td>
+              <td class="px-3 py-2 text-sm">1</td>
+              <td class="px-3 py-2 text-sm">Días desde la última compra &lt; "Días nuevos"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    feather.replace();
+
+    (async function(){
+      const token = localStorage.getItem('access_token');
+      if (!token) { window.location.href = '/login'; return; }
+
+      const ctrlError = document.getElementById('ctrl-error');
+      const freqError = document.getElementById('freq-error');
+
+      async function loadControlVariables(){
+        try {
+          const res = await fetch('/churn/control/variables', { headers: { 'Authorization': `Bearer ${token}` }});
+          if (!res.ok) throw new Error(await res.text());
+          const v = await res.json();
+          document.getElementById('coeficiente_regular').value = v.coeficiente_regular;
+          document.getElementById('dias_nuevos').value = v.dias_nuevos;
+          document.getElementById('pedidos_activo_frecuente').value = v.pedidos_activo_frecuente;
+          document.getElementById('pedidos_nuevo').value = v.pedidos_nuevo;
+          document.getElementById('pedidos_vip').value = v.pedidos_vip;
+        } catch (e) {
+          ctrlError.classList.remove('hidden');
+          ctrlError.textContent = 'No se pudieron cargar las variables de control';
+        }
+      }
+
+      function showSavedToast(){
+        const el = document.createElement('div');
+        // Estilos inline para que no dependan de Tailwind
+        el.textContent = 'Cambios guardados';
+        el.style.position = 'fixed';
+        el.style.right = '20px';
+        el.style.bottom = '20px';
+        el.style.padding = '8px 16px';
+        el.style.backgroundColor = '#059669'; // verde
+        el.style.color = '#FFFFFF';
+        el.style.borderRadius = '9999px';
+        el.style.fontSize = '0.875rem';
+        el.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+        el.style.zIndex = '9999';
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2500);
+      }
+
+      async function saveControlVariables(){
+        ctrlError.classList.add('hidden');
+        const payload = {
+          coeficiente_regular: parseFloat(document.getElementById('coeficiente_regular').value || '0'),
+          dias_nuevos: parseInt(document.getElementById('dias_nuevos').value || '0', 10),
+          pedidos_activo_frecuente: parseInt(document.getElementById('pedidos_activo_frecuente').value || '0', 10),
+          pedidos_nuevo: parseInt(document.getElementById('pedidos_nuevo').value || '0', 10),
+          pedidos_vip: parseInt(document.getElementById('pedidos_vip').value || '0', 10),
+        };
+        try {
+          const res = await fetch('/churn/control/variables', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            // Mostrar mensaje de error pero también el toast para dar feedback de acción
+            const txt = await res.text();
+            ctrlError.classList.remove('hidden');
+            ctrlError.textContent = txt || 'No se pudieron guardar las variables de control';
+          }
+          showSavedToast();
+        } catch (e) {
+          ctrlError.classList.remove('hidden');
+          ctrlError.textContent = 'No se pudieron guardar las variables de control';
+        }
+      }
+
+      async function loadFrequencies(){
+        const tbody = document.getElementById('freq-body');
+        try {
+          const res = await fetch('/churn/control/frequencies', { headers: { 'Authorization': `Bearer ${token}` }});
+          if (!res.ok) throw new Error(await res.text());
+          const list = await res.json();
+          tbody.innerHTML = '';
+          for (const f of list) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">${f.frecuencia}</td>
+              <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-800">${f.frecuencia_coef}</td>
+            `;
+            tbody.appendChild(tr);
+          }
+        } catch (e) {
+          freqError.classList.remove('hidden');
+          freqError.textContent = 'No se pudo cargar la tabla de frecuencias';
+        }
+      }
+
+      document.getElementById('save-ctrl').addEventListener('click', function(){
+        saveControlVariables();
+      });
+
+      await loadControlVariables();
+      await loadFrequencies();
+    })();
+  </script>
+</body>
+</html>

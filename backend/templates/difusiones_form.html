@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title id="pageTitle">Nueva Difusión</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+  <header class="bg-white shadow-sm">
+    <div class="w-full px-3 py-4 sm:px-4 lg:px-6 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900"><span class="text-moss-500">Pietro</span></h1>
+      <div class="flex items-center gap-3 min-w-[260px] justify-end">
+        <a href="/index.html" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Inicio</a>
+        <a href="/Clientes" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Clientes</a>
+        <a href="/Difusiones" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Difusiones</a>
+        <a href="/tablero" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Tabla de control</a>
+        <a href="/churn-view" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Churn</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6 max-w-3xl">
+    <h2 id="formTitle" class="text-2xl font-semibold text-gray-800 mb-6">Nueva Difusión</h2>
+    <form id="form" class="bg-white rounded-lg shadow p-6 space-y-5 border-2 border-moss-500">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Mensaje</label>
+        <textarea id="message" rows="4" class="w-full rounded-lg border-2 border-moss-500 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-moss-500 focus:border-moss-500" placeholder="Escribe tu mensaje..."></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Imagen</label>
+        <div class="flex items-center gap-3">
+          <button type="button" id="imageButton" class="inline-flex items-center px-4 py-2 rounded-lg border-2 border-moss-600 bg-moss-500/10 text-sm font-medium text-moss-700 hover:bg-moss-500/20 focus:outline-none focus:ring-2 focus:ring-moss-600">
+            Seleccionar archivo
+          </button>
+          <span id="imageFilename" class="text-xs text-gray-500 truncate">Sin archivos seleccionados</span>
+        </div>
+        <input id="image" type="file" accept="image/*" class="hidden" />
+        <div id="imagePreview" class="mt-2 hidden"><img class="max-h-40 rounded border" /></div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Destinatarios</label>
+        <textarea id="recipients" rows="3" class="w-full rounded-lg border-2 border-moss-500 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-moss-500 focus:border-moss-500" placeholder="Una línea por teléfono o coma separada"></textarea>
+      </div>
+      <div class="p-4 bg-gray-50 rounded border-2 border-moss-500 space-y-3">
+        <label class="inline-flex items-center gap-2 text-gray-800 text-sm px-3 py-2 rounded border-2 border-moss-500 bg-white hover:bg-moss-500/5 cursor-pointer">
+          <input id="schedule" type="checkbox" class="h-4 w-4 text-moss-500">
+          <span class="font-medium">Programar envío</span>
+        </label>
+        <div id="scheduleFields" class="grid grid-cols-1 md:grid-cols-2 gap-3 hidden">
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Fecha</label>
+            <input id="date" type="text" class="w-full rounded-lg border-2 border-moss-500 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-moss-500 focus:border-moss-500" placeholder="Seleccionar fecha" />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-700 mb-1">Hora</label>
+            <div class="flex items-center gap-2">
+              <input id="time" type="text" class="w-full rounded-lg border-2 border-moss-500 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-moss-500 focus:border-moss-500" placeholder="Seleccionar hora" />
+              <button type="button" id="confirmSchedule" class="inline-flex items-center px-3 py-1.5 rounded bg-moss-500 hover:bg-moss-600 text-white text-xs font-medium">
+                Confirmar
+              </button>
+            </div>
+          </div>
+          <div class="md:col-span-2 text-xs text-gray-500" id="scheduleSummary"></div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button id="saveDraft" type="button" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300">Guardar borrador</button>
+        <button id="sendNow" type="button" class="px-4 py-2 rounded bg-moss-500 hover:bg-moss-600 text-white">Enviar ahora</button>
+        <button id="save" type="button" class="hidden px-4 py-2 rounded bg-moss-500 hover:bg-moss-600 text-white">Guardar</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const mode = (document.currentScript && document.currentScript.dataset && document.currentScript.dataset.mode) || (window.mode)||'create';
+    const token = localStorage.getItem('access_token');
+    let currentBroadcastId = null;
+    if (!token) { location.href = '/login'; }
+
+    const schedule = document.getElementById('schedule');
+    const scheduleFields = document.getElementById('scheduleFields');
+    schedule.addEventListener('change', ()=> scheduleFields.classList.toggle('hidden', !schedule.checked));
+
+    const imgInput = document.getElementById('image');
+    const imgButton = document.getElementById('imageButton');
+    const imgFilename = document.getElementById('imageFilename');
+    const preview = document.getElementById('imagePreview');
+    imgButton.addEventListener('click', ()=> imgInput.click());
+    imgInput.addEventListener('change', ()=>{
+      const f = imgInput.files && imgInput.files[0];
+      if (!f) { preview.classList.add('hidden'); return; }
+      imgFilename.textContent = f.name;
+      const url = URL.createObjectURL(f);
+      preview.querySelector('img').src = url; preview.classList.remove('hidden');
+    });
+
+    // Date/time pickers estéticos con flatpickr
+    const datePicker = flatpickr('#date', {
+      dateFormat: 'Y-m-d',
+      altInput: true,
+      altFormat: 'd/m/Y',
+      allowInput: true,
+    });
+
+    const timePicker = flatpickr('#time', {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: 'H:i',
+      time_24hr: true,
+      altInput: true,
+      altFormat: 'H:i',
+      allowInput: true,
+    });
+
+    function getScheduledWhen(){
+      if (!schedule.checked) return null;
+      const dateStr = document.getElementById('date').value;
+      const timeStr = document.getElementById('time').value;
+      if (!dateStr || !timeStr) return null;
+      // dateStr viene como YYYY-MM-DD por dateFormat, timeStr como HH:MM
+      const whenIso = `${dateStr}T${timeStr}:00`;
+      return whenIso;
+    }
+
+    function updateScheduleSummary(){
+      const summary = document.getElementById('scheduleSummary');
+      const whenIso = getScheduledWhen();
+      if (!schedule.checked) {
+        summary.textContent = '';
+        return;
+      }
+      if (!whenIso) {
+        summary.textContent = 'Seleccioná fecha y hora para programar el envío.';
+        return;
+      }
+      const d = new Date(whenIso);
+      if (isNaN(d.getTime())) {
+        summary.textContent = 'Fecha u hora no válidas.';
+        return;
+      }
+      summary.textContent = `El mensaje se programará para: ${d.toLocaleString('es-AR')}`;
+    }
+
+    document.getElementById('date').addEventListener('change', updateScheduleSummary);
+    document.getElementById('time').addEventListener('change', updateScheduleSummary);
+    schedule.addEventListener('change', updateScheduleSummary);
+
+    async function loadEdit(id){
+      currentBroadcastId = id;
+      const r = await fetch(`/difusiones/${id}`, { headers: { 'Authorization': `Bearer ${token}` }});
+      if (!r.ok) { alert('No se pudo cargar la difusión'); return; }
+      const it = await r.json();
+      document.getElementById('message').value = it.message||'';
+      document.getElementById('recipients').value = (it.recipients||[]).join(', ');
+      if (it.scheduled_time) {
+        schedule.checked = true; scheduleFields.classList.remove('hidden');
+        const d = new Date(it.scheduled_time);
+        if (!isNaN(d.getTime())) {
+          datePicker.setDate(d, true, 'Y-m-d');
+          timePicker.setDate(d, true, 'H:i');
+          updateScheduleSummary();
+        }
+      }
+      document.getElementById('formTitle').textContent = 'Editar Difusión';
+      document.getElementById('pageTitle').textContent = 'Editar Difusión';
+      document.getElementById('save').classList.remove('hidden');
+    }
+
+    function parseRecipients(){
+      const raw = document.getElementById('recipients').value || '';
+      return raw.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean);
+    }
+
+    function showToast(msg){
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.position = 'fixed';
+      el.style.right = '20px';
+      el.style.bottom = '20px';
+      el.style.padding = '8px 16px';
+      el.style.backgroundColor = '#059669';
+      el.style.color = '#FFFFFF';
+      el.style.borderRadius = '9999px';
+      el.style.fontSize = '0.875rem';
+      el.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+      el.style.zIndex = '9999';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2000);
+    }
+
+    async function createOrUpdate(method, url, msg){
+      const payload = {
+        message: document.getElementById('message').value || '',
+        image_url: null, // se podría subir y obtener URL via /upload-image
+        recipients: parseRecipients(),
+      };
+      const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+      const r = await fetch(url, { method, headers, body: JSON.stringify(payload) });
+      if (!r.ok) { alert('No se pudo guardar'); return; }
+      const saved = await r.json();
+
+      // Si está marcado Programar envío, llamar al endpoint de programación
+      const whenIso = getScheduledWhen();
+      if (whenIso && saved && saved.id) {
+        try {
+          const scheduleUrl = `/difusiones/programar?id=${encodeURIComponent(saved.id)}&when=${encodeURIComponent(whenIso)}`;
+          const r2 = await fetch(scheduleUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+          if (!r2.ok) {
+            alert('La difusión se guardó pero no se pudo programar el envío');
+          }
+        } catch (e) {
+          console.error('Error programando difusión', e);
+        }
+      }
+
+      showToast(msg || (whenIso ? 'Difusión guardada y programada' : 'Cambios guardados'));
+      setTimeout(() => { location.href = '/difusiones'; }, 600);
+    }
+
+    document.getElementById('saveDraft').addEventListener('click', ()=> {
+      const id = currentBroadcastId;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/difusiones/${id}` : '/difusiones/';
+      const msg = id ? 'Borrador actualizado' : 'Borrador guardado';
+      createOrUpdate(method, url, msg);
+    });
+    document.getElementById('confirmSchedule').addEventListener('click', ()=> {
+      updateScheduleSummary();
+      const whenIso = getScheduledWhen();
+      if (whenIso) {
+        showToast('Horario de envío confirmado');
+      } else {
+        showToast('Seleccioná fecha y hora válidas');
+      }
+    });
+    document.getElementById('sendNow').addEventListener('click', ()=> {
+      const id = currentBroadcastId;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/difusiones/${id}` : '/difusiones/';
+      const msg = id ? 'Difusión actualizada' : 'Difusión creada';
+      createOrUpdate(method, url, msg);
+    });
+    document.getElementById('save').addEventListener('click', ()=> {
+      const id = currentBroadcastId;
+      if (!id) return alert('Falta ID');
+      createOrUpdate('PUT', `/difusiones/${id}`, 'Cambios guardados');
+    });
+
+    // si es edición
+    (function(){
+      const match = location.pathname.match(/\/difusiones\/editar\/(\d+)/);
+      if (match) loadEdit(match[1]);
+    })();
+  </script>
+</body>
+</html>

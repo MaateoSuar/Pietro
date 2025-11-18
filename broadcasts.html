@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Difusiones | Pietro</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+    <link rel="stylesheet" href="/assets/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+</head>
+<body>
+    <header class="bg-white shadow-sm">
+        <div class="w-full px-3 py-4 sm:px-4 lg:px-6 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-900">
+                <span class="text-moss-500">Pietro</span>
+            </h1>
+            <div class="flex items-center gap-3">
+                <a href="/index.html" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Inicio</a>
+                <a href="/Clientes" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Clientes</a>
+                <a href="/Difusiones" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Difusiones</a>
+                <a href="/tablero" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Tabla de control</a>
+                <a href="/churn-view" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Churn</a>
+                <button id="logout-btn" class="flex items-center text-gray-600 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 px-2 py-1 rounded">
+                    <i data-feather="log-out" class="mr-2 w-4 h-4"></i>
+                    Cerrar sesión
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Gestión de Difusiones</h1>
+            <button id="new-broadcast-btn" class="bg-moss-500 hover:bg-moss-600 text-white px-4 py-2 rounded flex items-center">
+                <i data-feather="plus" class="mr-2"></i> Nueva Difusión
+            </button>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 bg-gradient-to-br from-primary-50 to-accent-50 rounded-xl shadow-lg p-8">
+                <h2 class="text-xl font-bold text-primary-900 mb-6 flex items-center">
+                    <i data-feather="send" class="mr-2 text-primary-600"></i> 
+                    Nueva Difusión
+                </h2>
+                <form id="broadcast-form" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-primary-800 mb-2">Mensaje</label>
+                        <textarea 
+                            class="w-full p-4 border-2 border-primary-100 rounded-xl focus:border-primary-300 focus:ring-2 focus:ring-primary-200 bg-white/80 backdrop-blur-sm transition-all duration-200" 
+                            rows="5" 
+                            placeholder="Escribe tu mensaje aquí..."
+                        ></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-primary-800 mb-2">Imagen (opcional)</label>
+                            <div class="relative group">
+                                <label for="broadcast-image" class="block w-full h-32 rounded-xl border-2 border-dashed border-primary-200 hover:border-primary-300 bg-white/50 cursor-pointer flex flex-col items-center justify-center transition-all duration-200">
+                                    <i data-feather="image" class="w-8 h-8 text-primary-400 mb-2"></i>
+                                    <span class="text-sm text-primary-500">Haz clic para subir</span>
+                                </label>
+                                <input type="file" id="broadcast-image" class="hidden">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-primary-800 mb-2">Destinatarios</label>
+                            <select multiple class="w-full h-32 p-3 border-2 border-primary-100 rounded-xl bg-white/80 focus:border-primary-300 focus:ring-2 focus:ring-primary-200">
+                                <option class="p-2 hover:bg-primary-50">Cliente 1 (+54 11 1234-5678)</option>
+                                <option class="p-2 hover:bg-primary-50">Cliente 2 (+54 11 2345-6789)</option>
+                                <option class="p-2 hover:bg-primary-50">Cliente 3 (+54 11 3456-7890)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-primary-50 rounded-xl border border-primary-100">
+                        <div class="flex items-center mb-3">
+                            <input type="checkbox" id="schedule" class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500">
+                            <label for="schedule" class="ml-2 text-primary-800 font-medium">Programar envío</label>
+                        </div>
+                        <div id="schedule-fields" class="hidden space-y-3 pl-7">
+                            <div class="flex items-center gap-3">
+                                <label class="text-sm text-primary-700 min-w-[80px]">Fecha:</label>
+                                <input type="date" class="flex-1 p-2 border-2 border-primary-100 rounded-lg bg-white">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <label class="text-sm text-primary-700 min-w-[80px]">Hora:</label>
+                                <input type="time" class="flex-1 p-2 border-2 border-primary-100 rounded-lg bg-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 pt-2">
+                        <button type="button" class="flex-1 bg-gradient-to-r from-primary-100 to-primary-200 text-primary-800 px-6 py-3 rounded-xl hover:from-primary-200 hover:to-primary-300 shadow-sm flex items-center justify-center font-medium">
+                            <i data-feather="save" class="mr-2"></i> Guardar Borrador
+                        </button>
+                        <button type="submit" class="flex-1 bg-moss-600 hover:bg-moss-700 text-white px-6 py-3 rounded-xl shadow-md flex items-center justify-center font-medium">
+                            <i data-feather="send" class="mr-2"></i> Enviar Ahora
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-accent-500 to-accent-600 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        <i data-feather="clock" class="mr-2"></i>
+                        Historial de Difusiones
+                    </h2>
+                </div>
+                <div class="divide-y divide-primary-100" id="broadcasts-list">
+                    <!-- Placeholder for broadcast items -->
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-accent-100 p-3 rounded-lg text-accent-600">
+                                <i data-feather="mail" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-primary-900">Campaña de verano</h3>
+                                <p class="text-sm text-primary-600 mt-1">Enviada: 15/05/2023 14:30</p>
+                                <p class="text-sm text-primary-500 mt-2">25 destinatarios</p>
+                            </div>
+                            <button class="text-primary-400 hover:text-primary-600">
+                                <i data-feather="more-vertical" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-primary-100 p-3 rounded-lg text-primary-600">
+                                <i data-feather="mail" class="w-5 h-5"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-medium text-primary-900">Oferta especial</h3>
+                                <p class="text-sm text-primary-600 mt-1">Enviada: 10/05/2023 10:15</p>
+                                <p class="text-sm text-primary-500 mt-2">18 destinatarios</p>
+                            </div>
+                            <button class="text-primary-400 hover:text-primary-600">
+                                <i data-feather="more-vertical" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/script.js"></script>
+
+    <script>
+        feather.replace();
+        // logout modal
+        (function(){
+          const btn = document.getElementById('logout-btn');
+          if (!btn) return;
+          btn.addEventListener('click', () => {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-black/40 flex items-center justify-center z-50';
+            const modal = document.createElement('div');
+            modal.className = 'bg-white rounded-lg shadow-xl p-6 w-full max-w-sm';
+            modal.innerHTML = `
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Cerrar sesión?</h3>
+              <p class="text-sm text-gray-600 mb-4">Se cerrará tu sesión actual.</p>
+              <div class="flex justify-end gap-2">
+                <button id="cancelLogout" class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button id="confirmLogout" class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500">Cerrar sesión</button>
+              </div>`;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+            modal.querySelector('#cancelLogout').addEventListener('click', () => overlay.remove());
+            modal.querySelector('#confirmLogout').addEventListener('click', () => {
+              try { localStorage.removeItem('access_token'); } catch (e) {}
+              window.location.href = '/login';
+            });
+          });
+        })();
+
+        // Show/hide schedule fields
+        document.getElementById('schedule').addEventListener('change', function() {
+            document.getElementById('schedule-fields').classList.toggle('hidden', !this.checked);
+        });
+    </script>
+</body>
+</html>

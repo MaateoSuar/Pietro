@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    font-family: 'Inter', sans-serif;
+}
+/* Prevent horizontal layout shift when some pages have vertical scrollbar */
+html { overflow-y: scroll; }
+/* App background: use per-page defaults (no global override) */
+/* Smooth transitions */
+button, a, input, select, textarea, label {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form focus styles */
+input:focus, 
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: rgba(107, 142, 35, 0.6); /* moss */
+    box-shadow: 0 0 0 3px rgba(107, 142, 35, 0.15);
+}
+
+/* Gradient text */
+.gradient-text {
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* Card hover effects */
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom checkbox */
+input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e0f2fe;
+    border-radius: 4px;
+    background-color: white;
+    cursor: pointer;
+    position: relative;
+}
+
+input[type="checkbox"]:checked {
+    background-color: #6B8E23; /* moss */
+    border-color: #6B8E23;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Palette utilities (white, grays, black soft, moss) */
+:root {
+    --white: #FFFFFF;
+    --gray-50: #F2F2F2;
+    --gray-200: #E0E0E0;
+    --black-soft: #1A1A1A;
+    --moss-500: #6B8E23;
+    --moss-600: #5a7b1d;
+}
+
+.bg-white { background-color: var(--white) !important; }
+.bg-gray-50 { background-color: var(--gray-50) !important; }
+.bg-gray-200 { background-color: var(--gray-200) !important; }
+.text-black-soft { color: var(--black-soft) !important; }
+
+/* Moss utilities to match class names used in HTML */
+.bg-moss-500 { background-color: var(--moss-500) !important; }
+.bg-moss-600 { background-color: var(--moss-600) !important; }
+.text-moss-500 { color: var(--moss-500) !important; }
+.border-moss-500 { border-color: var(--moss-500) !important; }
+.hover\:bg-moss-600:hover { background-color: var(--moss-600) !important; }
+.hover\:text-moss-600:hover { color: var(--moss-600) !important; }

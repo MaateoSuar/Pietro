@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nuevo Cliente | Pietro</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32x32.png">
+  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+  <style> html{overflow-y:scroll} </style>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="w-full px-3 py-4 sm:px-4 lg:px-6 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-900"><span class="text-moss-500">Pietro</span></h1>
+      <div class="flex items-center gap-3 min-w-[260px] justify-end">
+        <a href="/index.html" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Inicio</a>
+        <a href="/Clientes" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Clientes</a>
+        <a href="/Difusiones" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Difusiones</a>
+        <a href="/tablero" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Tabla de control</a>
+        <a href="/churn-view" class="px-3 py-2 rounded bg-gray-200 hover:bg-moss-600 hover:text-white">Churn</a>
+        <button id="logout-btn" class="flex items-center text-gray-600 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 px-2 py-1 rounded">
+          <i data-feather="log-out" class="mr-2 w-4 h-4"></i>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-6 max-w-3xl">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Nuevo cliente</h2>
+    <form id="clientForm" class="bg-white rounded-lg shadow p-6 space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <input id="name" required class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input id="phone" required type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="20" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Zona</label>
+          <input id="zone" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Etiquetas</label>
+          <input id="tags" placeholder="vip, mayorista" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Notas</label>
+        <textarea id="notes" rows="3" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+      </div>
+      <div class="flex items-center justify-end gap-3">
+        <a href="/Clientes" class="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Cancelar</a>
+        <button type="submit" class="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white">Guardar</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    feather.replace();
+    // Logout modal
+    (function(){
+      const btn = document.getElementById('logout-btn');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black/40 flex items-center justify-center z-50';
+        const modal = document.createElement('div');
+        modal.className = 'bg-white rounded-lg shadow-xl p-6 w-full max-w-sm';
+        modal.innerHTML = `
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">¿Cerrar sesión?</h3>
+          <p class="text-sm text-gray-600 mb-4">Se cerrará tu sesión actual.</p>
+          <div class="flex justify-end gap-2">
+            <button id="cancelLogout" class="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">Cancelar</button>
+            <button id="confirmLogout" class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500">Cerrar sesión</button>
+          </div>`;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+        modal.querySelector('#cancelLogout').addEventListener('click', () => overlay.remove());
+        modal.querySelector('#confirmLogout').addEventListener('click', () => {
+          try { localStorage.removeItem('access_token'); } catch (e) {}
+          window.location.href = '/login';
+        });
+      });
+    })();
+
+    // Submit create client
+    document.getElementById('clientForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('access_token');
+      if (!token) { window.location.href = '/login'; return; }
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        zone: document.getElementById('zone').value.trim(),
+        tags: document.getElementById('tags').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      };
+      const res = await fetch('/clientes/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        window.location.href = '/Clientes';
+      } else {
+        alert('No se pudo crear el cliente');
+      }
+    });
+  </script>
+</body>
+</html>

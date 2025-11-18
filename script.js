@@ -145,9 +145,9 @@ async function fetchAllData() {
     try {
         const [stats, clients, movements, churn] = await Promise.all([
             safeFetch('/stats'),
-            safeFetch('/clientes'),
-            safeFetch('/movimientos'),
-            safeFetch('/churn')
+            safeFetch('/clientes/'),
+            safeFetch('/movimientos/'),
+            safeFetch('/churn/')
         ]);
 
         state.stats = stats || {};

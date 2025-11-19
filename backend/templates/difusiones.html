@@ -35,8 +35,18 @@
 
     <div id="error" class="hidden px-4 py-2 mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded"></div>
 
-    <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <!-- items injected here -->
+    <div class="mb-4 border-b border-gray-200">
+      <nav class="flex -mb-px" aria-label="Tabs">
+        <button id="tab-pending" class="mr-4 px-3 py-2 border-b-2 border-moss-500 text-moss-600 font-medium">Pendientes</button>
+        <button id="tab-sent" class="px-3 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700">Enviadas (historial)</button>
+      </nav>
+    </div>
+
+    <div id="pendingSection">
+      <div id="pendingList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </div>
+    <div id="sentSection" class="hidden">
+      <div id="sentList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
     </div>
   </main>
   <script>
@@ -47,7 +57,8 @@
       const token = localStorage.getItem('access_token');
       if (!token) { location.href = '/login'; return; }
       const error = document.getElementById('error');
-      const list = document.getElementById('list');
+      const pendingList = document.getElementById('pendingList');
+      const sentList = document.getElementById('sentList');
       try {
         const res = await fetch('/difusiones/', { headers: { 'Authorization': `Bearer ${token}` }});
         if (!res.ok) {
@@ -55,39 +66,75 @@
           error.classList.remove('hidden'); error.textContent = `Error ${res.status}: ${t}`; return;
         }
         const items = await res.json();
-        list.innerHTML = '';
-        for (const it of items) {
+        // Split by status
+        const pending = items.filter(it => it.status !== 'sent');
+        const sent = items.filter(it => it.status === 'sent');
+
+        function renderCard(it, opts){
           const when = it.scheduled_time ? new Date(it.scheduled_time) : null;
-          const card = document.createElement('div');
-          card.className = 'bg-white rounded-lg shadow p-4';
-          card.innerHTML = `
+          const el = document.createElement('div');
+          el.className = 'bg-white rounded-lg shadow p-4';
+          const recipients = Array.isArray(it.recipients) ? it.recipients : [];
+          const recipientsNote = opts?.showRecipients && recipients.length
+            ? `<div class="mt-2 text-xs text-gray-500">Enviada a: ${recipients.slice(0,5).join(', ')}${recipients.length>5?' y '+(recipients.length-5)+' más':''}</div>`
+            : '';
+          el.innerHTML = `
             <div class="flex items-start justify-between gap-3">
               <div>
-                <div class="font-semibold text-gray-800">${(it.message||'').slice(0,80) || '(sin mensaje)'}${(it.message||'').length>80?'…':''}</div>
+                <div class="font-semibold text-gray-800">${(it.message||'').slice(0,120) || '(sin mensaje)'}${(it.message||'').length>120?'…':''}</div>
                 <div class="text-sm text-gray-600 mt-1">
-                  ${when ? `Programada: ${when.toLocaleString()}` : (it.status==='sent' ? 'Enviada' : 'Borrador')}
-                  · ${Array.isArray(it.recipients)?it.recipients.length:0} destinatarios
+                  ${when ? `Programada: ${when.toLocaleString()}` : (it.status==='sent' ? 'Enviada' : (it.status==='scheduled'?'Programada':'Borrador'))}
+                  · ${recipients.length} destinatarios
                 </div>
+                ${recipientsNote}
               </div>
               <div class="relative">
                 <button class="more px-2 py-1 rounded border border-gray-300 text-gray-700">⋯</button>
-                <div class="menu hidden absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded shadow">
-                  <a href="/difusiones/editar/${it.id}" class="block px-3 py-2 hover:bg-gray-50">Editar</a>
+                <div class="menu hidden absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow">
+                  <a href="/difusiones/editar/${it.id}" class="block px-3 py-2 hover:bg-gray-50">Ver / Editar</a>
                   <button data-id="${it.id}" class="delete block w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Eliminar</button>
                 </div>
               </div>
             </div>`;
-          list.appendChild(card);
-          const more = card.querySelector('.more');
-          const menu = card.querySelector('.menu');
+          const more = el.querySelector('.more');
+          const menu = el.querySelector('.menu');
           more.addEventListener('click', ()=> menu.classList.toggle('hidden'));
-          card.querySelector('.delete').addEventListener('click', async (e)=>{
+          el.querySelector('.delete').addEventListener('click', async (e)=>{
             const id = e.currentTarget.getAttribute('data-id');
             if (!confirm('¿Eliminar difusión?')) return;
             const r = await fetch(`/difusiones/${id}`, { method:'DELETE', headers:{ 'Authorization': `Bearer ${token}` }});
             if (r.ok) location.reload(); else alert('No se pudo eliminar');
           });
+          return el;
         }
+
+        pendingList.innerHTML = '';
+        for (const it of pending) pendingList.appendChild(renderCard(it));
+        sentList.innerHTML = '';
+        for (const it of sent) sentList.appendChild(renderCard(it, { showRecipients: true }));
+
+        // Tabs behavior
+        const tabPending = document.getElementById('tab-pending');
+        const tabSent = document.getElementById('tab-sent');
+        const pendingSection = document.getElementById('pendingSection');
+        const sentSection = document.getElementById('sentSection');
+        function activate(tab){
+          if (tab === 'pending'){
+            pendingSection.classList.remove('hidden');
+            sentSection.classList.add('hidden');
+            tabPending.className = 'mr-4 px-3 py-2 border-b-2 border-moss-500 text-moss-600 font-medium';
+            tabSent.className = 'px-3 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+          } else {
+            pendingSection.classList.add('hidden');
+            sentSection.classList.remove('hidden');
+            tabPending.className = 'mr-4 px-3 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700';
+            tabSent.className = 'px-3 py-2 border-b-2 border-moss-500 text-moss-600 font-medium';
+          }
+        }
+        tabPending.addEventListener('click', ()=>activate('pending'));
+        tabSent.addEventListener('click', ()=>activate('sent'));
+        // default to pending
+        activate('pending');
       } catch(err) {
         error.classList.remove('hidden'); error.textContent = 'Error cargando difusiones';
       }
